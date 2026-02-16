@@ -1,42 +1,52 @@
-# Multi-Agent Customer Support System
-
-## Overview
-The Multi-Agent Customer Support System is designed to enhance customer service experience by employing multiple artificial intelligence agents that can handle various queries simultaneously.
+# Multi Agent System
 
 ## Features
-- **Multi-Agent Architecture**: Utilizes several AI agents to manage customer queries efficiently.
-- **Real-Time Processing**: Capable of handling inquiries in real-time, improving response times.
-- **Scalable Design**: Easily adaptable to increasing customer demands and more complex inquiries.
+- Multi-agent functionality for efficient task execution.
+- User-friendly interface for interaction.
+- Scalable architecture to accommodate varying loads.
+- Supports RAG (Retrieve and Generate) for enhanced data retrieval and generation.
 
-## Technologies Used
-- **Programming Language**: Python
-- **Frameworks**: Flask for web services, TensorFlow for AI models
-- **Database**: MongoDB for storing customer data
-
-## Installation Instructions
+## Quick Start
 1. Clone the repository:
    ```bash
    git clone https://github.com/AthiraRavindranathan/multi_agent_system.git
-   ```
-2. Navigate to the project directory:
-   ```bash
    cd multi_agent_system
    ```
-3. Install the required dependencies:
+2. Install required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
+3. Run the application:
+   ```bash
+   python main.py
+   ```
 
-## Usage
-To run the customer support system, execute:
-```bash
-python app.py
-```
+## API Endpoints
+- **GET /api/tasks**: Retrieve all tasks.
+- **POST /api/tasks**: Create a new task.
+- **GET /api/tasks/{id}**: Retrieve a specific task by ID.
+- **PUT /api/tasks/{id}**: Update a task by ID.
+- **DELETE /api/tasks/{id}**: Delete a task by ID.
 
-Access the application in your web browser at `http://localhost:5000`.
+## Architecture
+The system is based on a microservices architecture that allows for independent scaling and deployment of individual services, enhancing both flexibility and resilience.
 
-## Contributing
-Contributions are welcome! Please open an issue or submit a pull request for any changes you would like to propose.
+## RAG Implementation
+The RAG implementation allows for the retrieval of relevant data from various sources and the generation of responses using advanced language models.
 
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Docker Deployment
+To deploy the system using Docker:
+1. Build the Docker image:
+   ```bash
+   docker build -t multi_agent_system .
+   ```
+2. Run the Docker container:
+   ```bash
+   docker run -d -p 5000:5000 multi_agent_system
+   ```
+
+## ECS Fargate Instructions
+1. Define your task definition in the AWS Management Console.
+2. Choose Fargate as the launch type.
+3. Configure networking and security settings.
+4. Deploy the service to run the application in AWS ECS Fargate.
