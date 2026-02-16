@@ -1,0 +1,10 @@
+[  
+  { "id": 1, "category": "account", "content": "How to create a new account?" },  
+  { "id": 2, "category": "account", "content": "How to reset my password?" },  
+  { "id": 3, "category": "billing", "content": "How to update billing information?" },  
+  { "id": 4, "category": "billing", "content": "How to view my billing history?" },  
+  { "id": 5, "category": "technical", "content": "How to troubleshoot login issues?" },  
+  { "id": 6, "category": "technical", "content": "How to install the software?" },  
+  { "id": 7, "category": "support", "content": "How to contact support?" },  
+  { "id": 8, "category": "support", "content": "What are the support hours?" }  
+]
