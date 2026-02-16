@@ -79,44 +79,18 @@ async def handle_support_query(query: SupportQuery):
             "next_step": "router"
         }
         
-        # Execute workflow - using simple routing logic
-        # Check technical agent
-        from .agents import TechnicalAgent, BillingAgent
-        technical_agent = TechnicalAgent()
-        billing_agent = BillingAgent()
-        
-        tech_result = technical_agent.process(query.question)
-        if tech_result["answer"]:
-            state["agents_involved"].append(AgentType.TECHNICAL)
-            state["current_result"] = tech_result
-            state["total_steps"] += 1
-            state["escalated"] = True
-        else:
-            # Check billing agent
-            billing_result = billing_agent.process(query.question)
-            if billing_result["answer"]:
-                state["agents_involved"].append(AgentType.BILLING)
-                state["current_result"] = billing_result
-                state["total_steps"] += 1
-                state["escalated"] = True
-            else:
-                # Use FAQ agent
-                from .agents import FAQAgent
-                faq_agent = FAQAgent(retriever)
-                faq_result = faq_agent.process(query.question)
-                state["agents_involved"].append(AgentType.FAQ)
-                state["current_result"] = faq_result
-                state["total_steps"] += 1
+        # Execute workflow
+        final_state = workflow.invoke(state)
         
         # Extract final response
-        final_response = state.get("current_result", {}).get("answer", "Unable to process your request")
+        final_response = final_state.get("current_result", {}).get("answer", "Unable to process your request")
         
         return WorkflowResponse(
             query=query.question,
             final_response=final_response,
-            agents_involved=state.get("agents_involved", []),
-            escalated=state.get("escalated", False),
-            total_steps=state.get("total_steps", 0)
+            agents_involved=final_state.get("agents_involved", []),
+            escalated=final_state.get("escalated", False),
+            total_steps=final_state.get("total_steps", 0)
         )
     
     except Exception as e:

@@ -106,22 +106,25 @@ def build_workflow_graph(retriever: RAGRetriever) -> Graph:
     workflow = Graph()
     
     # Define nodes
-    def route_to_agents(state: Dict[str, Any]) -> str:
+    def route_to_agents(state: Dict[str, Any]) -> Dict[str, Any]:
         """Route query to appropriate agent based on content"""
         query = state["query"]
         
         # Check technical
         tech_result = technical_agent.process(query)
-        if tech_result["escalate"]:
-            return "technical"
+        if tech_result["answer"]:
+            state["next_step"] = "technical"
+            return state
         
         # Check billing
         billing_result = billing_agent.process(query)
-        if billing_result["escalate"]:
-            return "billing"
+        if billing_result["answer"]:
+            state["next_step"] = "billing"
+            return state
         
         # Default to FAQ
-        return "faq"
+        state["next_step"] = "faq"
+        return state
     
     def faq_node(state: Dict[str, Any]) -> Dict[str, Any]:
         result = faq_agent.process(state["query"])
@@ -130,17 +133,21 @@ def build_workflow_graph(retriever: RAGRetriever) -> Graph:
         state["total_steps"] += 1
         
         if result["escalate"]:
-            return "escalation"
-        return END
+            state["next_step"] = "escalation"
+        else:
+            state["next_step"] = END
+        return state
     
     def technical_node(state: Dict[str, Any]) -> Dict[str, Any]:
         result = technical_agent.process(state["query"])
-        if result["answer"]:  # Only add if processed
+        if result["answer"]:
             state["agents_involved"].append(AgentType.TECHNICAL)
             state["current_result"] = result
             state["total_steps"] += 1
-            return "escalation"
-        return "faq"
+            state["next_step"] = "escalation"
+        else:
+            state["next_step"] = "faq"
+        return state
     
     def billing_node(state: Dict[str, Any]) -> Dict[str, Any]:
         result = billing_agent.process(state["query"])
@@ -148,16 +155,19 @@ def build_workflow_graph(retriever: RAGRetriever) -> Graph:
             state["agents_involved"].append(AgentType.BILLING)
             state["current_result"] = result
             state["total_steps"] += 1
-            return "escalation"
-        return "faq"
+            state["next_step"] = "escalation"
+        else:
+            state["next_step"] = "faq"
+        return state
     
-    def escalation_node(state: Dict[str, Any]) -> str:
+    def escalation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         result = escalation_agent.process(state["query"], state.get("current_result", {}))
         state["agents_involved"].append(AgentType.ESCALATION)
         state["current_result"] = result
         state["total_steps"] += 1
         state["escalated"] = True
-        return END
+        state["next_step"] = END
+        return state
     
     # Add nodes
     workflow.add_node("router", route_to_agents)
@@ -177,9 +187,30 @@ def build_workflow_graph(retriever: RAGRetriever) -> Graph:
             "billing": "billing"
         }
     )
-    workflow.add_edge("faq", END)
-    workflow.add_edge("technical", END)
-    workflow.add_edge("billing", END)
+    workflow.add_conditional_edges(
+        "faq",
+        lambda x: x["next_step"],
+        {
+            "escalation": "escalation",
+            END: END
+        }
+    )
+    workflow.add_conditional_edges(
+        "technical",
+        lambda x: x["next_step"],
+        {
+            "escalation": "escalation",
+            "faq": "faq"
+        }
+    )
+    workflow.add_conditional_edges(
+        "billing",
+        lambda x: x["next_step"],
+        {
+            "escalation": "escalation",
+            "faq": "faq"
+        }
+    )
     workflow.add_edge("escalation", END)
     
     return workflow.compile()

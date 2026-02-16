@@ -8,12 +8,37 @@ env/
 venv/
 ENV/
 ENV*/
+
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
 # Build artifacts
 *.dist-info/
 *.egg
 *.whl
 build/
 dist/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Docker
+*.tar

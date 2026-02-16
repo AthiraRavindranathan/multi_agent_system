@@ -32,7 +32,12 @@ class RAGRetriever:
         """Load documents from JSON file"""
         with open(filepath, 'r') as f:
             data = json.load(f)
-        self.docs = [doc.get('content', '') for doc in data['documents']]
+        # Handle both array and object with 'documents' key
+        if isinstance(data, list):
+            self.docs = [doc.get('content', '') for doc in data]
+        else:
+            self.docs = [doc.get('content', '') for doc in data.get('documents', [])]
+        
         self.embeddings = self.model.encode(self.docs)
         
         dimension = self.embeddings.shape[1]
@@ -43,6 +48,18 @@ class RAGRetriever:
 def init_retriever(docs: List[str] = None) -> RAGRetriever:
     """Factory function to initialize RAG retriever"""
     if docs is None:
+        # Try to load from file first
+        try:
+            import os
+            docs_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'docs.json')
+            if os.path.exists(docs_path):
+                retriever = RAGRetriever([])
+                retriever.load_docs_from_file(docs_path)
+                return retriever
+        except Exception as e:
+            print(f"Warning: Could not load docs from file: {e}")
+        
+        # Fallback to default docs
         docs = [
             "To reset your password, go to login page and click 'Forgot Password'",
             "For billing questions, contact billing@support.com or visit billing portal",

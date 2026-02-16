@@ -11,6 +11,7 @@ WORKDIR /app
 
 # Copy requirements.txt file and install dependencies
 COPY requirements.txt .
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code to the container
@@ -24,4 +25,4 @@ USER user
 HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8000/ || exit 1
 
 # Command to run the application using uvicorn server on port 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
